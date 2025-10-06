@@ -88,14 +88,63 @@
         <button type="submit">Cari</button>
       </form>
 
-      <div id="weather-display">
-        <p class="placeholder">
-          Silakan masukkan lokasi untuk melihat info cuaca.
-        </p>
-      </div>
-      <script>
-        const apiKey = "39e77faf7c3240fc9e040434250610";
-      </script>
+      <div id="weather-display"></div>
     </div>
+
+    <script>
+      // --- Ganti dengan API Key Anda dari WeatherAPI.com ---
+      const apiKey = "39e77faf7c3240fc9e040434250610";
+
+      // Fungsi untuk mengambil data cuaca
+      async function getWeatherData(lokasi) {
+        const displayDiv = document.getElementById("weather-display");
+        displayDiv.innerHTML = '<p class="placeholder">Memuat data...</p>';
+
+        const apiUrl = `https://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${lokasi}&aqi=no`;
+
+        try {
+          const response = await fetch(apiUrl);
+          if (!response.ok) {
+            throw new Error("Lokasi tidak ditemukan");
+          }
+          const data = await response.json();
+
+          displayDiv.innerHTML = `
+                                <h2>Cuaca</h2>
+                                <div class="info-grid">
+                                    <p><b>Suhu:</b><span>${data.current.temp_c} °C</span></p>
+                                    <p><b>Kelembapan:</b><span>${data.current.humidity} %</span></p>
+                                </div>
+
+                                <h2>Lokasi</h2>
+                                <div class="info-grid">
+                                    <p><b>Negara:</b><span>${data.location.country}</span></p>
+                                    <p><b>Provinsi:</b><span>${data.location.region}</span></p>
+                                    <p><b>Kecamatan:</b><span>${data.location.name}</span></p>
+                                    <p><b>Latitude:</b><span>${data.location.lat}</span></p>
+                                    <p><b>Longitude:</b><span>${data.location.lon}</span></p>
+                                </div>
+                                `;
+        } catch (error) {
+          displayDiv.innerHTML = `<p class="error">Gagal memuat data. ${error.message}.</p>`;
+        }
+      }
+
+      window.onload = () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const lokasiDariUrl = urlParams.get("lokasi");
+
+        const inputForm = document.querySelector('input[name="lokasi"]');
+        const displayDiv = document.getElementById("weather-display");
+
+        if (lokasiDariUrl) {
+          inputForm.value = lokasiDariUrl;
+          getWeatherData(lokasiDariUrl);
+        } else {
+          displayDiv.innerHTML =
+            '<p class="placeholder">Silakan masukkan lokasi untuk melihat info cuaca.</p>';
+        }
+      };
+    </script>
   </body>
 </html>
